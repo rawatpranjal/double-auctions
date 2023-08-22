@@ -1,5 +1,0 @@
-- static Q-learning and DQN to learn to offer against a seller with unknown preferences
-- static Q-learning and DQN with varying own-valuation
-- two period Q-learning and DQN with fixed own-valuation and against a seller with unknown preferences (identical rejection rule)
-- two period Qlearning and DQN with varying own-valuation and against a seller with unknown preferences. 
-- two period DQN with varying valuation and deceptive seller. 
