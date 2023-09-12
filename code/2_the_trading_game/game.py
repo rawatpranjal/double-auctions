@@ -6,7 +6,7 @@ from traders import *
 
 def TradingGame(buyer_strategies, seller_strategies, verbose = 0):
     #nrounds, nperiods, ntokens, R1, R2, R3, R4, minprice, maxprice, nsteps = game_setup()
-    nrounds, nperiods, ntokens, R1, R2, R3, R4, minprice, maxprice, nsteps = 15, 15, 5, 10, 10, 10, 10, 1, 100, 50
+    nrounds, nperiods, ntokens, R1, R2, R3, R4, minprice, maxprice, nsteps = 1, 1, 4, 10, 10, 10, 10, 1, 100, 25
     nbuyers, nsellers = len(buyer_strategies), len(seller_strategies)
     game_metadata = [nrounds, nperiods, ntokens, nbuyers, nsellers, R1, R2, R3, R4, minprice, maxprice, nsteps]
     buyers, sellers = generate_agents(buyer_strategies, seller_strategies, game_metadata)
@@ -15,13 +15,9 @@ def TradingGame(buyer_strategies, seller_strategies, verbose = 0):
     # Begin game
     for rnd in range(nrounds):
 
-        # assign token values
+        # assign token values for this round
         token_values = round_setup(ntokens, nbuyers, nsellers, R1, R2, R3, R4)
-        for i in range(nbuyers):
-            db.buyers[i].reset_round(token_values[i])
-        for i in range(nsellers):
-            db.sellers[i].reset_round(token_values[nbuyers+i])
-            
+        
         # store round data
         p_eqbm, q_eqbm = compute_demand_supply(token_values, ntokens, nbuyers,nsellers)
         db.add_round([rnd, token_values, p_eqbm, q_eqbm])
@@ -34,9 +30,9 @@ def TradingGame(buyer_strategies, seller_strategies, verbose = 0):
             
             # reset period
             for i in range(nbuyers):
-                db.buyers[i].reset_period(token_values[i])
+                db.buyers[i].reset(token_values[i])
             for i in range(nsellers):
-                db.sellers[i].reset_period(token_values[i])
+                db.sellers[i].reset(token_values[i])
             
             for step in range(nsteps):
 

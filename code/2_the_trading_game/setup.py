@@ -138,36 +138,26 @@ def plot_period_results(period_bids, period_asks, period_prices, period_sales, t
         asks = period_asks[i]
         price = period_prices[i]
         sales = period_sales[i]
-        if price != np.nan:
+        if (price > 0):
             plt.scatter([sales]*len(bids), bids, s = 10, marker = 'x', c = 'red')
             plt.scatter([sales]*len(asks), asks, s = 10, marker = 'o', c = 'blue')
-            #plt.scatter(sales, price, s = 20, marker = '^', c = 'green')
         else:
             pass
-        
+
     # plot average and equilibrium prices    
     plt.plot(period_prices, color='green', linestyle='--', label='Mean Real Prices')
     plt.axhline(y=np.nanmean(p_eqbm), color='black', linestyle='--', label='Mean Eqbm Prices')
     plt.legend()
+    text_content = f'q*={q_eqbm}, mean(q)={np.round(np.nanmax(period_sales),1)},p*={(np.round(p_eqbm[0],1), np.round(p_eqbm[-1],1))}, mean(p)={np.round(np.nanmean(period_prices),1)}'
+    plt.title(text_content)
     plt.show()
+       
     
-    # print information
-    print('Eqbm quantity:', q_eqbm)
-    try:
-        print('Eqbm prices:', p_eqbm[0], 'to', p_eqbm[-1])
-    except:
-        print('No Eqbm price')
-    try:
-        print('Avg Prices:', np.nanmean(period_prices))
-        print('Actual quantity', np.nanmax(period_sales))
-    except: 
-        print('No sales')
-        
     # plot bid, ask, and actual prices over timesteps
     plt.plot(period_bids, c = 'r', linestyle='--')
     plt.plot(period_asks,  c = 'b', linestyle='--')
     plt.scatter(range(nsteps), period_prices, c = 'g')
-    plt.title('Bids, Asks, Prices over time')
+    plt.title('Bids (red), Asks (blue) and Prices (green) over trading steps')
     plt.show()
     
 ########################################################################
