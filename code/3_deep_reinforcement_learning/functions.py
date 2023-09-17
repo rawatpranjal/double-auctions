@@ -174,15 +174,16 @@ class Database:
 class Trader:
     def __init__(self, game_metadata, name, buyer=True):
         self.name, self.buyer, self.index, self.profit_history = name, buyer, int(name[1]), []
-        self.nrounds, self.nperiods, self.ntokens, self.nbuyers, self.nsellers, self.nsteps, self.R1, self.R2, self.R3, self.R4, = game_metadata 
+        self.nrounds, self.nperiods, self.ntokens, self.nbuyers, self.nsellers, self.nsteps, self.R1, self.R2, self.R3, self.R4, = game_metadata
+        self.step_profit, self.sale = 0, 1
          
     def reset(self, db, rnd):
         round_data = db.get_round(rnd)
         self.num_tokens_traded = 0
         if self.buyer == True:
-            self.token_values = list(round_data.redemption_values.item()[self.index, :])
+            self.token_values = list(round_data.tail(1).redemption_values.item()[self.index, :])
         else:
-            self.token_values = list(round_data.token_costs.item()[self.index, :])
+            self.token_values = list(round_data.tail(1).token_costs.item()[self.index, :])
 
     def transact(self, price):
         self.num_tokens_traded += 1
@@ -199,14 +200,18 @@ class Trader:
     
     def buy(self, current_bid, current_ask):
         if self.value >= current_ask:
+            self.sale = 1
             return True
         else:
+            self.sale = 0
             return False 
     
     def sell(self, current_bid, current_ask):
         if current_bid >= self.value:
+            self.sale = 1
             return True
         else:
+            self.sale = 0
             return False
     
     def learn(self, db):
@@ -235,34 +240,90 @@ class Random(Trader):
 
     def bid(self, db):
         self.next_token()
-        if self.value != np.nan:
-            self.bid_amount = np.round(np.random.uniform(0.05*self.value, self.value, 1).item(),1)
+        if self.value > 0:
+            self.bid_amount = np.round(np.random.uniform(self.value*0.5, self.value, 1).item(),1)
         else:
             self.bid_amount = np.nan
         return self.bid_amount
     
     def ask(self, db):
         self.next_token()
-        if self.value != np.nan:
-            self.ask_amount = np.round(np.random.uniform(self.value, self.value*1.9, 1).item(),1)
+        if self.value > 0:
+            self.ask_amount = np.round(np.random.uniform(self.value, self.value*1.5, 1).item(),1)
+        else:
+            self.ask_amount = np.nan
+        return self.ask_amount
+
+class Markup(Trader):
+    def __init__(self, game_metadata, name, buyer=True):
+        super().__init__(game_metadata, name, buyer)
+
+    def bid(self, db):
+        self.next_token()
+        if self.value > 0:
+            self.bid_amount = np.round(self.value*0.9,1)
+        else:
+            self.bid_amount = np.nan
+        return self.bid_amount
+    
+    def ask(self, db):
+        self.next_token()
+        if self.value > 0:
+            self.ask_amount = np.round(self.value*1.1,1)
         else:
             self.ask_amount = np.nan
         return self.ask_amount
     
+class Creeper(Trader):
+    def __init__(self, game_metadata, name, buyer=True):
+        super().__init__(game_metadata, name, buyer)
+
+    def bid(self, db):
+        self.next_token()
+        if self.value > 0:
+            if self.sale == 1:
+                self.bid_amount = self.value*0.9
+            else:
+                self.bid_amount += self.value*0.033
+        else:
+            self.bid_amount = np.nan
+        self.sale = 0
+        return self.bid_amount
+    
+    def ask(self, db):
+        self.next_token()
+        if self.value > 0:
+            if self.sale == 1:
+                self.ask_amount = self.value*1.1
+            else:
+                self.ask_amount -= self.value*0.033
+        else:
+            self.ask_amount = np.nan
+        self.sale = 0
+        return self.ask_amount
+  
+
 def generate_agents(game_metadata,buyer_strategies,seller_strategies):
     buyers = []
     for idx,i in enumerate(buyer_strategies):
         if i == 'Honest':
             buyers.append(Honest(game_metadata,'B'+str(idx),buyer=True)) 
-        if i == 'DQN':
-            buyers.append(DQN(game_metadata,'B'+str(idx),buyer=True)) 
         if i == 'Random':
             buyers.append(Random(game_metadata,'B'+str(idx),buyer=True)) 
-                        
+        if i == 'Markup':
+            buyers.append(Markup(game_metadata,'B'+str(idx),buyer=True)) 
+        if i == 'Creeper':
+            buyers.append(Creeper(game_metadata,'B'+str(idx),buyer=True)) 
+            
     sellers = []
     for idx,i in enumerate(seller_strategies):
         if i == 'Honest':
             sellers.append(Honest(game_metadata,'S'+str(idx),buyer=False))    
         if i == 'Random':
             sellers.append(Random(game_metadata,'S'+str(idx),buyer=False))
+        if i == 'Markup':
+            sellers.append(Random(game_metadata,'S'+str(idx),buyer=False))
+        if i == 'Creeper':
+            sellers.append(Creeper(game_metadata,'S'+str(idx),buyer=True)) 
+            
     return buyers, sellers
