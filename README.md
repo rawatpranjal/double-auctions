@@ -1,2 +1,2 @@
-# AI_Double_Auctions
+# double-auctions
 Analysis of algorithms learning to bid, ask, buy and sell in double auctions. 
