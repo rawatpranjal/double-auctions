@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from numba import jit
 import random
 import matplotlib.pyplot as plt
 from pprint import pprint
