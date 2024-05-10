@@ -100,13 +100,13 @@ class ZeroIntelligence(Trader):
     def bid(self):
         self.stepBid = np.nan
         if self.stepTokenValue >= 0:
-            self.stepBid = np.random.uniform(self.stepTokenValue*0.5,self.stepTokenValue*1.0, 1).item()
+            self.stepBid = np.random.uniform(35,self.stepTokenValue*1.0, 1).item()
         return np.round(self.stepBid,1)
         
     def ask(self):
         self.stepAsk = np.nan
         if self.stepTokenValue >= 0:
-            self.stepAsk = np.random.uniform(self.stepTokenValue*1.0,self.stepTokenValue*1.5, 1).item()
+            self.stepAsk = np.random.uniform(self.stepTokenValue*1.0,90, 1).item()
         return np.round(self.stepAsk, 1)
 
 class Reinforcer(Trader):
@@ -148,11 +148,14 @@ class Reinforcer(Trader):
         self.stepAsk = np.nan
         self.action = self.algo.act(self.state)
         if self.stepTokenValue >= 0:
+            #min = self.stepTokenValue * 0.1
+            #min = self.stepTokenValue * 0.1
+            #max = self.stepTokenValue * 1.5
+            #max = self.stepTokenValue * 1.0
+            min = 35
+            max = 90
             frac = (self.action+1)/2
-            min = self.stepTokenValue
-            max = self.stepTokenValue * 1.9
-            frac = (self.action+1)/2
-            self.stepAsk = min * frac + (1-frac) * min
+            self.stepAsk = min*(1-frac) + frac*max
         return self.stepAsk
 
 

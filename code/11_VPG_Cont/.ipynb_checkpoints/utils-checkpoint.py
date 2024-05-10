@@ -347,8 +347,10 @@ class Log:
         self.depth = depth
         self.meanPublicData = pd.read_csv('data/meanPublicData.csv').values.reshape(-1)
         self.stdPublicData = pd.read_csv('data/stdPublicData.csv').values.reshape(-1)
-        self.meanInternalData = pd.read_csv('data/meanInternalData.csv').values.reshape(-1)
-        self.stdInternalData = pd.read_csv('data/stdInternalData.csv').values.reshape(-1)
+        self.meanInternalData_buyers = pd.read_csv('data/meanInternalData_buyers.csv').values.reshape(-1)
+        self.stdInternalData_buyers = pd.read_csv('data/stdInternalData_buyers.csv').values.reshape(-1)
+        self.meanInternalData_sellers = pd.read_csv('data/meanInternalData_sellers.csv').values.reshape(-1)
+        self.stdInternalData_sellers = pd.read_csv('data/stdInternalData_sellers.csv').values.reshape(-1)
 
     def addStep(self, stepData):
         self.stepData.loc[len(self.stepData.index)] = stepData
@@ -365,8 +367,12 @@ class Log:
         if cnt >= self.depth:
             publicDataNorm = self.stepDataNorm[self.disclosure].iloc[-self.depth:]
             internalData = np.array([[agent.periodTrades, agent.roundTokens[0], agent.roundTokens[1], agent.roundTokens[2], agent.roundTokens[3]]])
-            internalDataNorm = (internalData - self.meanInternalData)/(self.stdInternalData+1e-8)
-            state = publicDataNorm.values.reshape(-1).tolist() + internalDataNorm.reshape(-1).tolist()
+            if agent.buyer == 1:
+                internalDataNorm = (internalData - self.meanInternalData_buyers)/(self.stdInternalData_buyers+1e-8)
+                state = publicDataNorm.values.reshape(-1).tolist() + internalDataNorm.reshape(-1).tolist()
+            else:
+                internalDataNorm = (internalData - self.meanInternalData_sellers)/(self.stdInternalData_sellers+1e-8)
+                state = publicDataNorm.values.reshape(-1).tolist() + internalDataNorm.reshape(-1).tolist()                
             return state
         else:
             return [0.0]*numStates

@@ -327,13 +327,12 @@ class Log:
     def __init__(self, gameData,disclosure,depth):
         self.gameData = gameData
         self.gameTypes, self.numBuyers, self.numSellers, self.numTokens, self.numRounds, self.numPeriods, self.numSteps, self.seed = gameData
-        self.stepData = pd.DataFrame(columns=['rnd', 'period', 'step', 'currentBid', 'currentAsk', 'buy', 'sell', 'price', 
-                                              'sale',
+        self.stepData = pd.DataFrame(columns=['rnd', 'period', 'step', 'currentBid', 'currentAsk', 'currentBidIdx', 'currentAskIdx','buy', 'sell', 'price', 'sale',
                                               'currentBidIdx_0', 'currentBidIdx_1', 'currentBidIdx_2', 'currentBidIdx_3',
                                               'currentAskIdx_0', 'currentAskIdx_1', 'currentAskIdx_2', 'currentAskIdx_3',
                                               'bids_0', 'bids_1', 'bids_2', 'bids_3',
                                               'asks_0', 'asks_1', 'asks_2', 'asks_3', 'bprofit', 'sprofit'])
-        self.stepDataNorm = pd.DataFrame(columns=['step', 'currentBid', 'currentAsk', 'buy', 'sell', 'price', 'sale',
+        self.stepDataNorm = pd.DataFrame(columns=['step', 'currentBid', 'currentAsk', 'currentBidIdx', 'currentAskIdx','buy', 'sell', 'price', 'sale',
                                               'currentBidIdx_0', 'currentBidIdx_1', 'currentBidIdx_2', 'currentBidIdx_3',
                                               'currentAskIdx_0', 'currentAskIdx_1', 'currentAskIdx_2', 'currentAskIdx_3',
                                               'bids_0', 'bids_1', 'bids_2', 'bids_3',
@@ -349,6 +348,8 @@ class Log:
         self.stdInternalData = pd.read_csv('data/stdInternalData.csv').values.reshape(-1)
 
     def addStep(self, stepData):
+        print(self.stepData)
+        print(stepData)
         self.stepData.loc[len(self.stepData.index)] = stepData
         stepData = (np.array(stepData[2:-2]) - self.meanPublicData)/(self.stdPublicData + 1e-8)
         self.stepDataNorm.loc[len(self.stepDataNorm.index)] = stepData
